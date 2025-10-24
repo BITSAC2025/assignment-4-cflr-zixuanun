@@ -35,13 +35,44 @@ int main(int argc, char **argv)
 void CFGAnalysis::analyze(SVF::ICFG *icfg)
 {
     // Sources and sinks are specified when an analyzer is instantiated.
-    for (auto src : sources)
-        for (auto snk : sinks)
+    for (auto srcId : sources)
+        for (auto snkId : sinks)
         {
             // TODO: DFS the graph, starting from src and detecting the paths ending at snk.
             // Use the class method 'recordPath' (already defined) to record the path you detected.
             //@{
+            vector<unsigned> path;
+            unordered_set<unsigned> visited;
 
+            function<void(unsigned)> dfs = [&](unsigned nodeId)
+            {
+                ICFGNode *node = icfg->getICFGNode(nodeId);
+                if (!node)
+                    return;
+
+                path.push_back(nodeId);
+
+                if (nodeId == snkId)
+                {
+                    recordPath(path); // 记录路径
+                    path.pop_back();
+                    return;
+                }
+
+                visited.insert(nodeId);
+
+                for (auto edge : node->getOutEdges())
+                {
+                    unsigned nextId = edge->getDstNode()->getId();
+                    if (visited.find(nextId) == visited.end())
+                        dfs(nextId);
+                }
+
+                visited.erase(nodeId);
+                path.pop_back();
+            };
+
+            dfs(srcId); // 从 srcId 开始搜索
             //@}
         }
 }
