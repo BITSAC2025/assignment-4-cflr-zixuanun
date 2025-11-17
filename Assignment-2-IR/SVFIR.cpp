@@ -47,35 +47,37 @@ int main(int argc, char** argv)
 
     cout << "SVFIR built. Dumping graphs to .dot files ..." << endl;
 
-    // Dump SVFIR/PAG 到 dot（通常 pag 非 const，可以直接调用）
-    pag->dump("svfir_initial.dot");
+    // Dump SVFIR/PAG 到 dot
+    if (pag->getPAG()) {
+        // getPAG() 返回 const PAG* ，调用非 const dump() 需要 const_cast
+        PAG *thePAG = const_cast<PAG*>(pag->getPAG());
+        thePAG->dump();
+    } 
 
-    // Dump CallGraph：getCallGraph() 返回 const CallGraph*（API 可能如此），
+    // Dump CallGraph：getCallGraph() 返回 const CallGraph*
     // 所以这里做一次 const_cast 再调用非 const 的 dump().
     // Dump CallGraph
     if (pag->getCallGraph()) {
-        // getCallGraph() 返回 const CallGraph*，需要去掉 const
         CallGraph *cg = const_cast<CallGraph*>(pag->getCallGraph());
-        cg->dump("callgraph_initial.dot");
+        cg->dump();
     }
 
     // Dump ICFG
     if (pag->getICFG()) {
         ICFG *icfg = const_cast<ICFG*>(pag->getICFG());
-        icfg->dump("icfg_initial.dot");
+        icfg->dump();
     }
 
 
     // 清理：释放 SVFIR 结构与模块集
-    SVFIR::releaseSVFIR();
-    LLVMModuleSet::releaseLLVMModuleSet();
+    // SVFIR::releaseSVFIR();
 
     // 释放 LLVM 全局资源
-    llvm::llvm_shutdown();
+    // llvm::llvm_shutdown();
 
-    // 释放我们临时申请的 argv 拷贝数组（注意仅删除数组本身，数组内指针指向 argv 或字面串，不要 delete 每个指针）
-    delete[] arg_value;
+    // 释放临时申请的 argv 拷贝数组（注意仅删除数组本身，数组内指针指向 argv 或字面串，不要 delete 每个指针）
+    // delete[] arg_value;
     //@}
-
+    LLVMModuleSet::releaseLLVMModuleSet();
     return 0;
 }
