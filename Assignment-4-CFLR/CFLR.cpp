@@ -190,6 +190,9 @@ void CFLR::solve()
                             workList.push(CFLREdge(v_i, v_k, VA));
                         }
                     }
+                    if (X == Addr && Y == VF)       addEdge(v_i, v_k, PTBar); // PTBar ::= Addr VF (补全)
+                    if (X == VA && Y == StoreBar)   addEdge(v_i, v_k, SVBar); // SVBar ::= VA StoreBar (补全)
+                    if (X == PTBar && Y == VA)      addEdge(v_i, v_k, PV);    // PV ::= PTBar VA (补全)
                 }
             }
         }
@@ -242,6 +245,12 @@ void CFLR::solve()
                             workList.push(CFLREdge(v_k, v_j, LV));
                         }
                     }
+                    if (Y == VFBar && X == AddrBar) addEdge(v_k, v_j, PT);    // PT ::= VFBar AddrBar (补全)
+                    if (Y == VF && X == VF)         addEdge(v_k, v_j, VF);    // VF ::= VF VF (关键遗漏!)
+                    if (Y == SV && X == Load)       addEdge(v_k, v_j, VF);    // VF ::= SV Load (补全)
+                    if (Y == PV && X == Load)       addEdge(v_k, v_j, VF);    // VF ::= PV Load (补全)
+                    if (Y == Store && X == VP)      addEdge(v_k, v_j, VF);    // VF ::= Store VP (补全)
+                    if (Y == VFBar && X == VFBar)   addEdge(v_k, v_j, VFBar); // VFBar ::= VFBar VFBar (补全)
                 }
             }
         }
